@@ -16,8 +16,24 @@ class OrderService {
     return newItem;
   }
 
+  async findByUser(userId) {
+    const orders = await models.Order.findAll({
+      where: {
+        '$customer.user.id$': userId
+      },
+      include: [
+          {
+            association: 'customer',
+            include: ['user']
+          },
+        ],
+      });
+    return orders;
+  }
+
   async find() {
-    return [];
+    const orders = await models.Order.findAll();
+    return orders;
   }
 
   async findOne(id) {
@@ -31,18 +47,22 @@ class OrderService {
         ],
       }
     );
+    if (!order) {
+      throw boom.notFound('category not found');
+    }
     return order;
   }
 
   async update(id, changes) {
-    return {
-      id,
-      changes,
-    };
+    const order = await this.findOne(id);
+    const updatedOrder = await order.update(changes);
+    return updatedOrder;
   }
 
   async delete(id) {
-    return { id };
+    const order = await this.findOne(id);
+    await order.destroy();
+    return { id }
   }
 
 }
