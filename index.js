@@ -9,17 +9,23 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
-const whitelist = ['http://localhost:8080', 'https://myapp.co'];
-const options = {
+// 🔹 Lista de orígenes permitidos
+const whitelist = ['http://localhost:3001', 'https://enrique1994mex.github.io'];
+
+// 🔹 Opciones de CORS
+const corsOptions = {
   origin: (origin, callback) => {
-    if (whitelist.includes(origin) || !origin) {
+    if (!origin || whitelist.some(allowed => origin.startsWith(allowed))) {
       callback(null, true);
     } else {
-      callback(new Error('no permitido'));
+      callback(new Error('Acceso no permitido por CORS'));
     }
-  }
-}
-app.use(cors(options));
+  },
+  credentials: true, // Permite el uso de cookies o autenticación
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Métodos permitidos
+  allowedHeaders: ['Content-Type', 'Authorization'], // Headers permitidos
+};
+app.use(cors(corsOptions));
 
 require('./utils/auth');
 
